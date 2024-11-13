@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Investment Plan</title>
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #111;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    .calculator {
+      background-color: #1d1d1d;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 40px rgba(0, 0, 0, 0.7);
+      width: 450px;
+      text-align: center;
+      margin-top: 50px;
+      overflow-y: auto;
+      max-height: 90vh;
+      border: 2px solid #444;
+    }
+
+    h1 {
+      font-family: 'Roboto', sans-serif;
+      font-size: 28px;
+      color: #00b4d8;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      font-family: 'Roboto', sans-serif;
+      font-size: 18px;
+      color: #aaa;
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 15px;
+      font-size: 16px;
+      color: #bbb;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 20px;
+      border: 1px solid #444;
+      border-radius: 8px;
+      background-color: #222;
+      color: #fff;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+    }
+
+    input:focus {
+      background-color: #333;
+      outline: none;
+    }
+
+    button {
+      padding: 14px 25px;
+      font-size: 16px;
+      cursor: pointer;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      transition: background-color 0.3s ease;
+      margin-bottom: 20px;
+    }
+
+    button:hover {
+      background-color: #00b4d8;
+    }
+
+    .results {
+      margin-top: 30px;
+      color: #bbb;
+    }
+
+    .results p {
+      font-size: 16px;
+    }
+
+    .monthly-results {
+      text-align: left;
+      margin-top: 20px;
+      color: #bbb;
+    }
+
+    .monthly-results h3 {
+      color: #00b4d8;
+    }
+
+    .summary {
+      margin-top: 30px;
+      color: #bbb;
+    }
+
+    .summary p {
+      font-size: 18px;
+      font-weight: bold;
+      color: #ffd700;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6), 0 0 25px rgba(255, 215, 0, 0.8);
+    }
+
+    .note, .minDepositNote {
+      font-size: 14px;
+      color: #ff4040;
+      font-weight: bold;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    .note.vip-note {
+      color: #32cd32;
+    }
+
+    .note.platinum-note {
+      color: #ffd700;
+    }
+
+    .plan-button {
+      width: 100%;
+      transition: transform 0.3s ease;
+      margin-bottom: 12px;
+    }
+
+    .plan-button:hover {
+      transform: scale(1.05);
+    }
+
+    .button-estandar {
+      background-color: #ff8c00;
+    }
+
+    .button-vip {
+      background-color: #32cd32;
+    }
+
+    .button-platino {
+      background-color: #ffd700;
+    }
+
+    .default-button {
+      background-color: #00b4d8;
+    }
+
+    .default-button:hover {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <h1>Investment Plan</h1>
+    <h2 id="planType">Available only for Forex Investment</h2>
+
+    <div class="note" id="note">
+      **Note**: Monthly returns are 5% of the initial investment, with a "snowball effect" increasing the returns by 10% each month on the accumulated amount.
+    </div>
+    
+    <p style="color: #00b4d8;" id="minDepositNote">Note: The minimum deposit amount is 5000 USD.</p>
+    
+    <!-- Plan Buttons -->
+    <button class="plan-button button-estandar" onclick="setPlan('estandar')">Standard Account</button>
+    <button class="plan-button button-vip" onclick="setPlan('vip')">VIP Account</button>
+    <button class="plan-button button-platino" onclick="setPlan('platino')">Platinum Account</button>
+    
+    <label for="inversion">Investment Amount (in USD):</label>
+    <input type="number" id="inversion" placeholder="Enter initial investment">
+    
+    <!-- Calculate Returns Button -->
+    <button class="default-button" onclick="calculateReturns()">Calculate Returns</button>
+    
+    <div class="results">
+      <p><strong>Daily Return:</strong> <span id="dailyReturn"></span> $</p>
+      <p><strong>Initial Monthly Return:</strong> <span id="initialMonthlyReturn"></span> $</p>
+      <p><strong>Total Annual Return:</strong> <span id="annualReturn"></span> $</p>
+    </div>
+    
+    <div class="monthly-results" id="monthlyReturns"></div>
+    
+    <div class="summary">
+      <p><strong>Total Withdrawal After 1 Year:</strong> <span id="totalWithdrawal"></span> $</p>
+    </div>
+
+    <!-- Reset Button -->
+    <button class="default-button" onclick="resetInterface()">Reset</button>
+  </div>
+
+  <script>
+    const plans = {
+      estandar: {
+        monthlyRate: 0.05,
+        monthlyIncrease: 0.10,
+        note: `**Note**: Monthly returns are 5% of the initial investment, with a "snowball effect" increasing the returns by 10% each month on the accumulated amount.`,
+        availableFor: "Forex",
+        minimum: 5000
+      },
+      vip: {
+        monthlyRate: 0.05,
+        monthlyIncrease: 0.12,
+        note: `**Note**: Monthly returns are 5% of the initial investment, with a "snowball effect" increasing the returns by 12% each month on the accumulated amount.`,
+        availableFor: "Forex and Indices",
+        minimum: 10000
+      },
+      platino: {
+        monthlyRate: 0.05,
+        monthlyIncrease: 0.15,
+        note: `**Note**: Monthly returns are 5% of the initial investment, with a "snowball effect" increasing the returns by 15% each month on the accumulated amount.`,
+        availableFor: "Forex, Indices, Commodities, and Cryptocurrencies",
+        minimum: 25000
+      },
+    };
+
+    function setPlan(plan) {
+      const planData = plans[plan];
+      document.getElementById("planType").innerText = `Available for ${planData.availableFor}`;
+      document.getElementById("note").innerHTML = planData.note;
+      document.getElementById("minDepositNote").innerText = `Note: The minimum deposit amount is ${planData.minimum} USD.`;
+
+      if (plan === "vip") {
+        document.getElementById("note").classList.add('vip-note');
+        document.getElementById("note").classList.remove('platinum-note');
+        document.getElementById("note").style.color = '#32cd32';
+      } else if (plan === "platino") {
+        document.getElementById("note").classList.add('platinum-note');
+        document.getElementById("note").classList.remove('vip-note');
+        document.getElementById("note").style.color = '#ffd700';
+      } else {
+        document.getElementById("note").classList.remove('vip-note', 'platinum-note');
+        document.getElementById("note").style.color = '#ff4040';
+      }
+
+      window.activePlan = planData;
+    }
+
+    function calculateReturns() {
+      const initialInvestment = parseFloat(document.getElementById("inversion").value);
+      if (isNaN(initialInvestment) || initialInvestment < window.activePlan.minimum) {
+        alert(`The minimum investment for this plan is ${window.activePlan.minimum} USD.`);
+        return;
+      }
+
+      const monthlyRate = window.activePlan.monthlyRate;
+      const monthlyIncrease = window.activePlan.monthlyIncrease;
+
+      let accumulatedAmount = initialInvestment;
+      const initialMonthlyReturn = accumulatedAmount * monthlyRate;
+      const dailyReturn = initialMonthlyReturn / 30;
+
+      const currentDate = new Date();
+      let currentMonth = currentDate.getMonth();
+      const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      const dynamicMonths = [];
+      for (let i = 1; i <= 12; i++) {
+        dynamicMonths.push(months[(currentMonth + i) % 12]);
+      }
+
+      let annualReturn = 0;
+      let monthlyDetails = "";
+      for (let month = 0; month < 12; month++) {
+        let monthlyReturn = accumulatedAmount * monthlyRate;
+        annualReturn += monthlyReturn;
+        accumulatedAmount += monthlyReturn;
+        accumulatedAmount *= (1 + monthlyIncrease);
+        monthlyDetails += `<p><strong>${dynamicMonths[month]}:</strong> ${monthlyReturn.toFixed(2)} $</p>`;
+      }
+
+      document.getElementById("dailyReturn").innerText = dailyReturn.toFixed(2);
+      document.getElementById("initialMonthlyReturn").innerText = initialMonthlyReturn.toFixed(2);
+      document.getElementById("annualReturn").innerText = annualReturn.toFixed(2);
+      document.getElementById("monthlyReturns").innerHTML = `<h3>Monthly Return (Snowball Effect):</h3>${monthlyDetails}`;
+      const totalWithdrawal = initialInvestment + annualReturn;
+      document.getElementById("totalWithdrawal").innerText = totalWithdrawal.toFixed(2);
+    }
+
+    function resetInterface() {
+      document.getElementById("inversion").value = '';
+      document.getElementById("dailyReturn").innerText = '';
+      document.getElementById("initialMonthlyReturn").innerText = '';
+      document.getElementById("annualReturn").innerText = '';
+      document.getElementById("monthlyReturns").innerHTML = '';
+      document.getElementById("totalWithdrawal").innerText = '';
+      setPlan('estandar');
+    }
+
+    // Initialize the interface with the standard plan
+    window.activePlan = plans.estandar;
+  </script>
+</body>
+</html>
